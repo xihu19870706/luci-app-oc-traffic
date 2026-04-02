@@ -36,6 +36,9 @@ jobs:
         env:
           ARCH: ${{ matrix.arch }}-${{ env.IMMORTALWRT_BRANCH }}
           FEEDNAME: packages_ci
+          IGNORE_ERRORS: true
+          NO_REFRESH: true
+          BUILD_LOG: 1
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
