@@ -1,0 +1,6 @@
+config settings
+    option collection_interval '300'
+    option data_retention_days '45'
+    option memory_limit '20'
+    option cpu_limit '5'
+    option enabled '1'

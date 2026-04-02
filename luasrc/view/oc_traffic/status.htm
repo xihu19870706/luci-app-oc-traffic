@@ -1,0 +1,98 @@
+<%+header%>
+
+<div class="cbi-map">
+    <h2 name="content"><%:OpenClash Traffic Monitor%></h2>
+    
+    <div class="cbi-section">
+        <h3><%:Real-time Traffic%></h3>
+        <div id="traffic_status">
+            <p><%:Loading traffic data...%></p>
+        </div>
+    </div>
+    
+    <div class="cbi-section">
+        <h3><%:Proxy Nodes Traffic%></h3>
+        <table class="cbi-section-table">
+            <tr>
+                <th class="cbi-section-table-cell"><%:Node Name%></th>
+                <th class="cbi-section-table-cell"><%:Download%></th>
+                <th class="cbi-section-table-cell"><%:Upload%></th>
+                <th class="cbi-section-table-cell"><%:Total%></th>
+            </tr>
+            <tbody id="proxy_table">
+                <tr><td colspan="4"><%:Loading...%></td></tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="cbi-section">
+        <h3><%:Traffic Chart (Last 24 Hours)%></h3>
+        <div id="traffic_chart">
+            <p><%:Loading chart...%></p>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    function formatBytes(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function loadTrafficData() {
+        fetch('/cgi-bin/luci/admin/services/oc_traffic/api?action=traffic_data')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data) {
+                    const traffic = JSON.parse(data.data);
+                    updateTrafficStatus(traffic);
+                    updateProxyTable(traffic);
+                }
+            })
+            .catch(err => {
+                document.getElementById('traffic_status').innerHTML = '<p>Error loading data</p>';
+            });
+    }
+    
+    function updateTrafficStatus(traffic) {
+        let totalDownload = 0;
+        let totalUpload = 0;
+        
+        if (traffic.proxies) {
+            traffic.proxies.forEach(p => {
+                totalDownload += parseInt(p.download || 0);
+                totalUpload += parseInt(p.upload || 0);
+            });
+        }
+        
+        document.getElementById('traffic_status').innerHTML = 
+            '<p><%:Download%>: ' + formatBytes(totalDownload) + 
+            ' | <%:Upload%>: ' + formatBytes(totalUpload) +
+            ' | <%:Last Update%>: ' + traffic.date + '</p>';
+    }
+    
+    function updateProxyTable(traffic) {
+        let html = '';
+        if (traffic.proxies) {
+            traffic.proxies.forEach(p => {
+                const total = (parseInt(p.download || 0) + parseInt(p.upload || 0));
+                html += '<tr>' +
+                    '<td>' + p.name + '</td>' +
+                    '<td>' + formatBytes(p.download) + '</td>' +
+                    '<td>' + formatBytes(p.upload) + '</td>' +
+                    '<td>' + formatBytes(total) + '</td>' +
+                    '</tr>';
+            });
+        }
+        document.getElementById('proxy_table').innerHTML = html || '<tr><td colspan="4">No data</td></tr>';
+    }
+    
+    // Load data every 30 seconds
+    loadTrafficData();
+    setInterval(loadTrafficData, 30000);
+</script>
+
+<%+footer%>

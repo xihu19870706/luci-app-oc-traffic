@@ -1,0 +1,20 @@
+# Build artifacts
+*.ipk
+*.o
+*.a
+*.so
+build_dir/
+bin/
+staging_dir/
+tmp/
+dl/
+feeds/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log

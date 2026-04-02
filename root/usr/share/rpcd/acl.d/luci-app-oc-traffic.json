@@ -1,0 +1,27 @@
+{
+    "luci-app-oc-traffic": {
+        "description": "OpenClash Traffic Monitor",
+        "read": {
+            "ubus": {
+                "file": [
+                    "list",
+                    "read",
+                    "write"
+                ]
+            },
+            "uci": [
+                "oc_traffic"
+            ]
+        },
+        "write": {
+            "ubus": {
+                "file": [
+                    "write"
+                ]
+            },
+            "uci": [
+                "oc_traffic"
+            ]
+        }
+    }
+}

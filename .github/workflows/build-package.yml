@@ -1,0 +1,57 @@
+name: Build ImmortalWrt Package
+
+on:
+  push:
+    branches: [ "main", "master" ]
+    paths:
+      - 'package/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+env:
+  PACKAGE_NAME: luci-app-oc-traffic
+  IMMORTALWRT_BRANCH: openwrt-24.10
+  TARGET_ARCH: x86-64
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x86-64
+            target: x86/64
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Build Package using ImmortalWrt SDK
+        uses: immortalwrt/gh-action-sdk@master
+        env:
+          ARCH: ${{ matrix.target }}-${{ env.IMMORTALWRT_BRANCH }}
+          FEEDNAME: packages_ci
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PACKAGE_NAME }}-${{ matrix.arch }}
+          path: |
+            bin/packages/${{ matrix.target }}/packages_ci/*.ipk
+          if-no-files-found: error
+
+      - name: Create Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.run_number }}
+          name: Build ${{ github.run_number }} - ${{ env.PACKAGE_NAME }}
+          files: |
+            bin/packages/${{ matrix.target }}/packages_ci/*.ipk
+          generate_release_notes: true
+          fail_on_unmatched_files: false
