@@ -45,7 +45,8 @@ jobs:
         with:
           name: ${{ env.PACKAGE_NAME }}-${{ matrix.arch }}
           path: |
-            bin/packages/${{ matrix.target }}/packages_ci/*.ipk
+            bin/packages/${{ matrix.target }}/packages/*.ipk
+            bin/packages/${{ matrix.target }}/*/luci-app-oc-traffic*.ipk
           if-no-files-found: error
 
       - name: Create Release
