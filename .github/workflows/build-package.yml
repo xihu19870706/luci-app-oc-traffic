@@ -40,6 +40,17 @@ jobs:
           NO_REFRESH: true
           BUILD_LOG: 1
 
+      - name: Debug - List output directories
+        run: |
+          echo "=== Checking bin/packages ==="
+          ls -la bin/packages/ || echo "bin/packages/ not found"
+          echo "=== Checking bin/packages/${{ matrix.target }} ==="
+          ls -la bin/packages/${{ matrix.target }}/ || echo "Directory not found"
+          echo "=== Finding .ipk files ==="
+          find bin/ -name "*.ipk" 2>/dev/null || echo "No .ipk files found"
+          echo "=== Finding luci-app-oc-traffic ==="
+          find bin/ -name "*oc-traffic*" 2>/dev/null || echo "No oc-traffic files found"
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
